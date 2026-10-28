@@ -33,6 +33,7 @@ from pathlib import Path
 from feed import FeedError, open_feed
 from one_cli import OneError, load_env, preflight, redact, resolve, resolve_all, say
 from parasail import ParasailError, check_model, model_id
+from policy import zone_verdict
 
 OUT = Path("out")
 ZONE_ACTIONS = ("exorcise", "evacuate")
@@ -318,11 +319,29 @@ def run(args) -> int:
                 if order["zone"] in rnd.contained:
                     say(f"  skipped {order['zone']}: already contained")
                     continue
+                # The gate has the last word. The swarm may want to act on a single-channel
+                # anomaly; a false alarm costs the score, so that order is held here.
+                gate = gate_verdict(order["zone"], obs)
+                if not gate["real"]:
+                    say(f"  gate held {order['zone']}: {gate['reason']}")
+                    held.append({"zone": order["zone"], "reason": f"gate: {gate['reason']}"})
+                    continue
                 carry_out(order, feed, outbox, rnd, observed_at, timings)
             feed.advance()
 
     scoreboard(feed.score(), timings, mode, feed.source, time.time() - started, outbox)
     return 0
+
+
+def gate_verdict(zone: str, obs: dict) -> dict:
+    """The deterministic gate's read on one zone, taken straight from the feed's sensors.
+
+    The swarm argues and explains; this decides. A false alarm is a scored failure, so a zone whose
+    anomaly sits in a single channel is held even when the Dispatcher wants to act on it.
+    """
+    reading = (obs.get("sensors") or {}).get(zone) or {}
+    report = next((r.get("text", "") for r in obs.get("reports", []) if r.get("zone") == zone), "")
+    return zone_verdict(zone, reading, report)
 
 
 def main() -> int:
