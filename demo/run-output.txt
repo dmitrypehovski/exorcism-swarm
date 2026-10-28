@@ -1,0 +1,36 @@
+Feed: local mock (facility_sim.py). Mode: dry-run.
+model provider: openrouter (FALLBACK) model=deepseek/deepseek-v4.1-flash — Parasail refused inference (HTTP 403: {"id":"97956922ea97e54b51a74e10475834a2","error":{"message":"Inference not allowed. Please add a valid payment); OpenRouter answered the probe
+ONE_SECRET is empty: dry run without You.com search. Fill it in to give the Analyst the web.
+
+tick 0/2: the swarm is looking
+Using an approximate input token count for model 'deepseek/deepseek-v4.1-flash': assuming one token per four characters because a native token count is unavailable.
+  held Server Vault: False alarm: single-channel motion spike only, consistent with 11 civilians moving in an equipment room (costume explanation).
+  held Greenhouse: False alarm: isolated 74 dB audio spike with no EMF, thermal or motion support; resolved as the party playlist.
+  held Cafeteria: No anomaly: all channels in range, 0 motion events.
+  held Morgue: No anomaly: all channels in range, motion just under limit.
+  exorcise Atrium: contained. outbreak in the Atrium contained, 8 civilians safe
+  [dry-run] Linear issue: [Contained] Atrium: broad-spectrum outbreak (EMF 7.2 mG, temp 16.1 C, audio 61 dB, motion 7) with whispering and radio silence (tick 0)
+  exorcise Chapel: contained. outbreak in the Chapel contained, 23 civilians safe
+  [dry-run] Linear issue: [Contained] Chapel: broad-spectrum outbreak (EMF 7.1 mG, temp 15.8 C, audio 56 dB, motion 6) with a figure passing through a wall and breath fog (tick 0)
+
+tick 1/2: the swarm is looking
+  held Atrium: Already contained; sensors fully normal (EMF 0.9, temp 20.5, audio 40, motion 1).
+  held Chapel: Already contained; sensors fully normal (EMF 2.5, temp 20.6, audio 37, motion 2).
+  held Server Vault: False alarm (confidence 0.88): single-channel motion blip (6 vs 3) already easing, all other channels nominal, mundane cause (intern in ghost costume).
+  held Cafeteria: No sighting; all channels within normal range (EMF 1.2, temp 20.3, audio 35, motion 0).
+  held Morgue: No sighting; all channels within normal range (EMF 1.8, temp 21.5, audio 41, motion 1).
+  held Greenhouse: False alarm (confidence 0.90): single-channel audio spike (68 dB vs 50) already falling, no EMF/motion signature, mundane cause (Halloween party playlist).
+  no containment orders this tick
+
+==================================================
+  SCOREBOARD  (dry-run)
+==================================================
+  Outbreaks contained               2/2
+  Mean ticks to containment         1.0
+  Mean seconds to containment       26.2
+  False alarms                      0
+  Civilians saved                   31 of 31 at risk
+  Civilians lost                    0
+  Outbreaks missed                  0
+==================================================
+appended to out/runs.jsonl
