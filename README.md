@@ -113,6 +113,15 @@ The dispatch is not a print statement. Read back through One after the live run:
   `ARL-9` contained (the gated run)
 - You.com — reached both directly and through One's `you` platform
 
+## Demo video
+
+2 minutes 7 seconds, rendered from the repo's own `make_demo.py` (PIL frames piped into ffmpeg, so it
+is reproducible from source rather than screen-recorded):
+
+https://cdn.jsdelivr.net/gh/dmitrypehovski/exorcism-swarm@main/demo/exorcism-swarm-demo.mp4
+
+The same file is committed at `demo/exorcism-swarm-demo.mp4`.
+
 ## Where each partner is load-bearing
 
 | Partner | Owns | Remove it and |
