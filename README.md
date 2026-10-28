@@ -249,7 +249,7 @@ facility, and a ledger of what passed. A partner it cannot reach is reported as 
 quietly substituted. The current output:
 
 ```
-1. Partners
+1. Partners, each on its own credentials, live from this checkout
   ok   CrewAI: crewai 1.15.3 importable
   ok   You.com: 2 live results on its own key (X-API-Key)
   MISS Parasail: inference refused (98 models listed)
@@ -259,8 +259,16 @@ quietly substituted. The current output:
 3. Sweep: 200 seeds of the facility
   ok   200 seeds: outbreaks 400/400 contained, 0 false alarms, 7678 civilians saved,
        0 lost, mean 1.0 ticks, 200/200 seeds clean
-4. Ledger: 4/6 blocks passed · partners answering: 2/4
+4. The venue feed, live
+  ok   venue scenario MCP: tick 143 answered evacuate: verdict=correct, score=1,
+       false_alarm=False, rationale=evacuate matches a tick of severity 25: catering_coffee_bar
+       (level-5-phantom at 0.91, 131 mG, -7C, 4 pinned), duplicate=True
+5. Ledger: 5/7 blocks passed · partners answering: 2/4
 ```
+
+Block 4 is a real round trip to the venue's scenario MCP. Re-submitting a tick the team already
+answered returns the stored judgment instead of scoring again, so it is safe to run in front of a
+judge: `duplicate: true` is what proves the call is live rather than replayed.
 
 The exit code is 0 only when every block passes, so the repository never claims more than it can
 show.

@@ -168,7 +168,32 @@ def check_sweep(seeds: int, ticks: int) -> None:
                f"{perfect}/{seeds} seeds clean")
 
 
-# --- 4. ledger -----------------------------------------------------------------
+# --- 4. the live feed ----------------------------------------------------------
+
+def check_feed() -> None:
+    """One real round trip to the venue's scenario MCP, on the published tick.
+
+    Re-submitting a tick the team already answered returns the stored judgment instead of scoring
+    again, so this is safe to run in front of a judge: it proves the connection is live without
+    changing our standing.
+    """
+    try:
+        import feed_mcp
+        judgment = feed_mcp.submit(143, "evacuate")
+    except Exception as exc:  # noqa: BLE001
+        record("feed", "venue scenario MCP", False, f"{type(exc).__name__}: {str(exc)[:120]}")
+        return
+    inner = judgment.get("judgment") or judgment
+    ok = bool(inner.get("verdict"))
+    record("feed", "venue scenario MCP", ok,
+           f"tick {inner.get('tick_id', 143)} answered {inner.get('expected', '?')}: "
+           f"verdict={inner.get('verdict')}, score={inner.get('score')}, "
+           f"false_alarm={inner.get('false_alarm')}, "
+           f"rationale={str(inner.get('rationale'))[:80]}..., "
+           f"duplicate={judgment.get('duplicate')}")
+
+
+# --- 5. ledger -----------------------------------------------------------------
 
 def main() -> int:
     ap = argparse.ArgumentParser()
@@ -190,9 +215,12 @@ def main() -> int:
     print(f"\n3. Sweep: {args.seeds} seeds of the facility")
     check_sweep(args.seeds, args.ticks)
 
+    print("\n4. The venue feed, live")
+    check_feed()
+
     passed = sum(1 for r in RESULTS if r["ok"])
     failed = [r for r in RESULTS if not r["ok"]]
-    print(f"\n4. Ledger: {passed}/{len(RESULTS)} blocks passed")
+    print(f"\n5. Ledger: {passed}/{len(RESULTS)} blocks passed")
     for r in failed:
         print(f"   MISS {r['block']} / {r['name']}: {r['detail']}")
     partners_live = sum(1 for r in RESULTS if r["block"] == "partners" and r["ok"])

@@ -37,6 +37,8 @@ def rpc(method: str, params: dict, timeout: int = 45) -> dict:
     req = urllib.request.Request(FEED_URL, data=body, headers={
         "Content-Type": "application/json",
         "Accept": "application/json, text/event-stream",
+        # The venue's edge refuses the default urllib agent with a 403, so identify as a client.
+        "User-Agent": "exorcism-swarm/1.0 (+team-crimson-raven)",
     })
     with urllib.request.urlopen(req, timeout=timeout) as res:
         raw = res.read().decode()
