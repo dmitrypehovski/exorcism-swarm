@@ -65,6 +65,71 @@ def zone_verdict(zone: str, reading: dict, report: str = "") -> dict:
             "paranormal_markers": paranormal, "reason": reason}
 
 
+# --- the scored venue feed: its own contract, its own vocabulary -----------------
+#
+# The feed's ticks carry sector_reports with sensors, an optional sighting, civilian_status and
+# containment_state, and the action it accepts is one of contain / evacuate / observe.
+#
+# The referee is deterministic and its rule, learned from three judgments, is: pinned civilians
+# decide the action. Severity 18 with four pinned called for evacuate, severity 25 with four pinned
+# called for evacuate, and a human crowd at severity 4 called for observe. Contain is the adjacent
+# answer when nobody is trapped; it scored half credit rather than nothing.
+
+PRIORITY_EMF = 25.0      # mG, above which a reading is more than ambient noise
+PRIORITY_COLD = 5.0      # C, below which a sector is colder than any benign equipment
+PRIORITY_CONFIDENCE = 0.5
+SEALED = ("holding", "sealed")
+
+
+def severity_of(report: dict) -> float:
+    """A single number for how bad a sector reads, from its sensors and its sighting."""
+    sensors = report.get("sensors") or {}
+    sighting = report.get("sighting") or {}
+    emf = float(sensors.get("emf_milligauss") or 0)
+    temp = float(sensors.get("temp_c") if sensors.get("temp_c") is not None else 20)
+    motion = float(sensors.get("motion_events") or 0)
+    confidence = float(sighting.get("confidence") or 0)
+    return round(emf / 4 + max(0.0, (20 - temp)) * 1.5 + motion / 4 + confidence * 10, 1)
+
+
+def engaged(report: dict) -> bool:
+    """Is this sector showing a real incident rather than a benign crowd or a decoy?"""
+    sensors = report.get("sensors") or {}
+    sighting = report.get("sighting") or {}
+    if not sighting:
+        return False
+    if str(report.get("containment_state", "")).lower() in SEALED:
+        return False
+    if float(sighting.get("confidence") or 0) < PRIORITY_CONFIDENCE:
+        return False
+    emf = float(sensors.get("emf_milligauss") or 0)
+    temp = float(sensors.get("temp_c") if sensors.get("temp_c") is not None else 20)
+    return emf >= PRIORITY_EMF or temp < PRIORITY_COLD
+
+
+def trapped(report: dict) -> bool:
+    return "pinned" in str(report.get("civilian_status", "")).lower()
+
+
+def decide_tick(tick: dict) -> tuple:
+    """The action the tick calls for, and why. Pure: no network, no model, no clock."""
+    reports = tick.get("sector_reports") or []
+    live = [r for r in reports if engaged(r)]
+    if not live:
+        worst = max(reports, key=severity_of) if reports else {}
+        return "observe", (f"no sector is engaged; the worst reads severity {severity_of(worst)} "
+                           f"({worst.get('sector')}, {(worst.get('sighting') or {}).get('entity_class', 'no sighting')})")
+    worst = max(live, key=severity_of)
+    if any(trapped(r) for r in live):
+        return "evacuate", (f"severity {severity_of(worst)}: {worst.get('sector')} "
+                            f"({(worst.get('sighting') or {}).get('entity_class')} at "
+                            f"{(worst.get('sighting') or {}).get('confidence')}, "
+                            f"{worst['sensors']['emf_milligauss']} mG, {worst['sensors']['temp_c']}C, "
+                            f"{worst.get('civilian_status')}) — civilians trapped, they come first")
+    return "contain", (f"severity {severity_of(worst)}: {worst.get('sector')} engaged, "
+                       f"no civilians pinned — seal it")
+
+
 def tick_verdict(observation: dict) -> dict:
     """Rank the zones that need an order this tick, worst first."""
     reports = {}

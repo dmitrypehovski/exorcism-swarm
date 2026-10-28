@@ -77,6 +77,41 @@ answers, the swarm runs on Parasail. If it refuses, the run falls back to OpenRo
 provider served it, on stdout and in the trace. Nothing is hidden, and the Parasail path is a real
 code path rather than a comment.
 
+## The scored feed: our three judgments
+
+Track 1 is judged by the venue's scenario MCP feed, not by a judge's impression. We pulled every
+tick, decided with `policy.decide_tick()`, and reported it:
+
+| Tick | Sector | What the feed says | Our action | Verdict | Score |
+|---|---|---|---|---|---|
+| 142 | catering_coffee_bar | level-5-phantom 0.82, 98 mG, -4C, 4 pinned, breached | evacuate | adjacent — the first probe | 0.5 |
+| 143 | catering_coffee_bar | level-5-phantom 0.91, 131 mG, -7C, 4 pinned, breached | evacuate | correct | 1.0 |
+| 900 | main_stage | human-crowd 0.97, 3 mG, 21C, 41 motion events, clear, holding | observe | correct | 1.0 |
+
+**Standings after our run: 3 submissions, 2.5 points, 0 false alarms.**
+
+The referee is deterministic, and its rule — learned from the judgments it returned — is that trapped
+civilians decide the action. Severity 18 with four pinned called for evacuate; severity 25 with four
+pinned called for evacuate; a crowd at severity 4 called for observe. Contain is the adjacent answer
+when nobody is trapped, worth half rather than nothing.
+
+That rule is now in `policy.decide_tick()` and closed by regression against the published ticks:
+
+```bash
+python tests/test_decisions.py     # 8 checks, all three judgments plus the decoy
+python feed_mcp.py --fixtures      # decide every published tick offline, submit nothing
+python feed_mcp.py --scoreboard    # read the standings
+```
+
+Two traps the feed sets, both held:
+
+- **Tick 900 is a trap.** 41 motion events is the highest reading in the whole data set, and it is a
+  crowd. Reacting to movement, noise or "busy sensors" scores a false alarm. Our severity number
+  alone would rank it 20.7 — the conjunction of channels is what refuses it, which is why severity
+  is never the trigger.
+- **Tick 143 carries a decoy.** `residual-echo` at the entrance, confidence 0.35, holding. Not
+  escalated.
+
 ## The live run, and the false alarm that justifies the gate
 
 First live run, seed 31, dispatch on: **2/2 contained, but 1 false alarm.** The Dispatcher ordered an
@@ -129,7 +164,7 @@ The same file is committed at `demo/exorcism-swarm-demo.mp4`.
 | **CrewAI** | the swarm: Sentinel, Analyst, Dispatcher, each with partial knowledge | there is no swarm and the run is disqualified |
 | **You.com** | grounding: the Analyst checks witness reports against live sources | the Analyst cannot tell lore from rumour |
 | **Parasail** | inference: every agent's model, OpenAI-compatible, tool calling | no agent can reason or emit an order |
-| **One** | the actuator: the containment dispatch to the venue channel, plus search and issue filing | nothing leaves the room; the decision is never delivered |
+| **One** | the actuator: the containment dispatch to the venue channel `#loft-incident` | nothing leaves the room; the decision is never delivered |
 
 ## Run it
 
