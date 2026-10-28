@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Exorcism Swarm — demo</title>
+<style>
+  :root{
+    --bg:#080b11; --panel:#0f151f; --panel2:#141c28; --line:#1e2937;
+    --fg:#e6edf3; --dim:#8b98a9; --cyan:#22d3ee; --green:#4ade80;
+    --red:#f87171; --amber:#fbbf24; --purple:#a78bfa; --blue:#60a5fa;
+  }
+  *{box-sizing:border-box; margin:0; padding:0}
+  html,body{width:1280px;height:720px;overflow:hidden;background:var(--bg);
+    font-family:"DejaVu Sans",Inter,system-ui,sans-serif; color:var(--fg)}
+  #stage{position:relative;width:1280px;height:720px}
+  .scene{position:absolute;inset:0;padding:44px 56px}
+  .el{opacity:0;will-change:opacity,transform}
+  .head{font-size:15px;letter-spacing:.22em;text-transform:uppercase;color:var(--cyan);font-weight:700}
+  .sub{font-size:14px;color:var(--dim)}
+  .panel{background:var(--panel);border:1px solid var(--line);border-radius:14px}
+  .mono{font-family:"DejaVu Sans Mono",monospace}
+
+  /* title */
+  #s1{display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center}
+  #s1 h1{font-size:76px;letter-spacing:.06em;font-weight:800;
+    background:linear-gradient(92deg,#e6edf3 20%,var(--cyan) 60%,var(--purple));
+    -webkit-background-clip:text;-webkit-text-fill-color:transparent}
+  #s1 .line{font-size:22px;color:var(--dim);margin-top:14px}
+  #s1 .repo{margin-top:34px;font-size:16px;color:var(--purple)}
+
+  /* facility */
+  .grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:22px}
+  .sector{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:19px 20px;position:relative}
+  .ticker{margin-top:16px;padding:13px 18px;border-radius:11px;border:1px solid var(--line);
+    background:rgba(20,28,40,.9);font-size:14px;color:var(--dim);font-family:"DejaVu Sans Mono",monospace}
+  .sector .name{font-size:15px;font-weight:700;letter-spacing:.04em}
+  .sector .rows{margin-top:9px;font-size:13px;color:var(--dim);line-height:1.75}
+  .sector .v{color:var(--fg);font-family:"DejaVu Sans Mono",monospace}
+  .sector.hot{border-color:#7f1d1d;background:linear-gradient(180deg,#1b1116,#0f151f)}
+  .sector.hot .name{color:var(--red)}
+  .sector.trap{border-color:#78350f;background:linear-gradient(180deg,#1c1710,#0f151f)}
+  .sector.trap .name{color:var(--amber)}
+  .tag{position:absolute;top:12px;right:14px;font-size:11px;padding:3px 8px;border-radius:99px;font-weight:700;letter-spacing:.08em}
+  .tag.hot{background:#7f1d1d;color:#fecaca}
+  .tag.trap{background:#78350f;color:#fde68a}
+  .tag.calm{background:#14532d;color:#bbf7d0}
+
+  /* trap compare */
+  .compare{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-top:26px}
+  .card{padding:20px;border-radius:14px;border:1px solid var(--line);background:var(--panel)}
+  .card .cap{font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:var(--dim)}
+  .card .verdict{font-size:30px;font-weight:800;margin-top:10px}
+  .card.bad{border-color:#7f1d1d} .card.bad .verdict{color:var(--red)}
+  .card.good{border-color:#14532d} .card.good .verdict{color:var(--green)}
+  .card p{margin-top:10px;font-size:14px;color:var(--dim);line-height:1.6}
+
+  /* agents */
+  .agents{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:24px}
+  .agent{padding:16px;border-radius:14px;border:1px solid var(--line);background:var(--panel2)}
+  .agent h3{font-size:17px;letter-spacing:.03em}
+  .agent .role{font-size:12px;color:var(--cyan);letter-spacing:.1em;text-transform:uppercase;margin-top:3px}
+  .agent ul{margin-top:12px;font-size:13.5px;color:var(--dim);line-height:1.85;list-style:none}
+  .agent li:before{content:"▸ ";color:var(--cyan)}
+
+  /* channel bars */
+  .ch{margin-top:12px}
+  .ch .lab{display:flex;justify-content:space-between;font-size:13.5px;margin-bottom:5px}
+  .bar{height:9px;border-radius:99px;background:#1b2431;overflow:hidden}
+  .bar i{display:block;height:100%;border-radius:99px;width:0}
+
+  /* verdicts */
+  table{width:100%;border-collapse:collapse;margin-top:26px;font-size:15.5px}
+  th{text-align:left;font-size:11.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--dim);padding-bottom:9px;font-weight:600}
+  td{padding:17px 10px;border-top:1px solid var(--line)}
+  td.mono{font-family:"DejaVu Sans Mono",monospace;font-size:13.5px}
+  .badge{padding:4px 10px;border-radius:99px;font-size:12px;font-weight:700}
+  .b-half{background:#78350f;color:#fde68a}
+  .b-ok{background:#14532d;color:#bbf7d0}
+
+  /* discord */
+  .dc{display:flex;gap:14px;padding:18px;border-radius:14px;background:#1c2333;border:1px solid #2b3446;margin-top:26px}
+  .dc .av{width:44px;height:44px;border-radius:50%;background:linear-gradient(135deg,var(--purple),var(--cyan));flex:0 0 auto}
+  .dc .who{font-weight:700;font-size:15px}
+  .dc .body{margin-top:8px;font-size:14.5px;line-height:1.65;color:#dbe4ef}
+  .dc .meta{margin-top:12px;font-size:12.5px;color:var(--dim);font-family:"DejaVu Sans Mono",monospace}
+
+  /* partners */
+  .pipe{display:flex;align-items:center;gap:12px;margin-top:34px;justify-content:center}
+  .pill{padding:14px 20px;border-radius:12px;border:1px solid var(--line);background:var(--panel);font-weight:700;font-size:15px}
+  .pill small{display:block;font-weight:400;font-size:12px;color:var(--dim);margin-top:4px}
+  .arrow{color:var(--dim);font-size:20px}
+  .big{font-size:34px;font-weight:800;margin-top:26px}
+  .row{display:flex;gap:16px;margin-top:18px}
+  .stat{flex:1;padding:16px;border-radius:12px;background:var(--panel);border:1px solid var(--line);text-align:center}
+  .stat b{display:block;font-size:30px;font-weight:800}
+  .stat span{font-size:12px;color:var(--dim);letter-spacing:.1em;text-transform:uppercase}
+  .foot{position:absolute;left:56px;bottom:26px;font-size:12.5px;color:#5b6879;letter-spacing:.08em}
+  .progress{position:absolute;left:0;bottom:0;height:3px;background:linear-gradient(90deg,var(--cyan),var(--purple));width:0}
+
+  /* atmosphere */
+  #bgfx{position:absolute;inset:0;pointer-events:none;
+    background:
+      radial-gradient(1100px 520px at 18% -10%, rgba(34,211,238,.10), transparent 60%),
+      radial-gradient(900px 460px at 92% 112%, rgba(167,139,250,.10), transparent 60%),
+      repeating-linear-gradient(0deg, rgba(255,255,255,.014) 0 1px, transparent 1px 3px)}
+  #vig{position:absolute;inset:0;pointer-events:none;
+    box-shadow:inset 0 0 220px rgba(0,0,0,.75)}
+
+  /* pipeline strip, shared by every scene */
+  #pipe{position:absolute;left:56px;right:56px;bottom:52px;display:flex;align-items:center;gap:10px}
+  #pipe .step{flex:1;padding:11px 14px;border-radius:11px;border:1px solid var(--line);
+    background:rgba(15,21,31,.85);font-size:12.5px;color:#5f6c7d;letter-spacing:.06em;text-align:center;
+    transition:none}
+  #pipe .step b{display:block;font-size:13.5px;color:#7d8a9b;font-weight:700;letter-spacing:.02em}
+  #pipe .step.on{border-color:var(--cyan);background:rgba(34,211,238,.09)}
+  #pipe .step.on b{color:var(--cyan)}
+  #pipe .step.done b{color:var(--green)}
+</style>
+</head>
+<body>
+<div id="stage">
+  <div id="bgfx"></div>
+
+  <!-- 1 · title -->
+  <div class="scene" id="s1">
+    <h1 class="el" data-in="0.4">EXORCISM SWARM</h1>
+    <div class="line el" data-in="1.6">Track 1 · The Exorcism Protocol · You.com Halloween Hack 2026</div>
+    <div class="line el" data-in="2.6" style="font-size:17px;color:#6b7788">A supervised CrewAI swarm that tells a haunting from a crowd</div>
+    <div class="repo el mono" data-in="3.6">github.com/dmitrypehovski/exorcism-swarm</div>
+  </div>
+
+  <!-- 2 · facility -->
+  <div class="scene" id="s2" style="display:none">
+    <div class="head el" data-in="0.2">The facility · aws-builder-loft-sf</div>
+    <div class="sub el" data-in="0.6">six sectors, six sensor channels, one incident stream</div>
+    <div class="grid">
+      <div class="sector el" data-in="1.2"><div class="name">main_stage</div>
+        <div class="rows">EMF <span class="v">3 mG</span> · temp <span class="v">21 °C</span><br>motion <span class="v">41 events</span><br>sighting <span class="v">human-crowd</span></div></div>
+      <div class="sector hot el" data-in="1.6"><div class="tag hot">BREACHED</div><div class="name">catering_coffee_bar</div>
+        <div class="rows">EMF <span class="v" id="c-emf">98 mG</span> · temp <span class="v" id="c-temp">−4 °C</span><br>motion <span class="v">17 events</span><br>sighting <span class="v">level-5-phantom 0.82</span></div></div>
+      <div class="sector el" data-in="2.0"><div class="name">entrance</div>
+        <div class="rows">EMF <span class="v">44 mG</span> · temp <span class="v">11 °C</span><br>motion <span class="v">6 events</span><br>sighting <span class="v">residual-echo 0.35</span></div></div>
+      <div class="sector el" data-in="2.4"><div class="tag calm">HOLDING</div><div class="name">server_vault</div>
+        <div class="rows">EMF <span class="v">2.5 mG</span> · temp <span class="v">19 °C</span><br>motion <span class="v">2 events</span><br>sighting <span class="v">—</span></div></div>
+      <div class="sector el" data-in="2.8"><div class="tag calm">HOLDING</div><div class="name">greenhouse</div>
+        <div class="rows">EMF <span class="v">1.4 mG</span> · temp <span class="v">21 °C</span><br>motion <span class="v">1 event</span><br>sighting <span class="v">—</span></div></div>
+      <div class="sector el" data-in="3.2"><div class="tag calm">HOLDING</div><div class="name">cafeteria</div>
+        <div class="rows">EMF <span class="v">1.2 mG</span> · temp <span class="v">20 °C</span><br>motion <span class="v">0 events</span><br>sighting <span class="v">—</span></div></div>
+    </div>
+    <div class="ticker el" data-in="3.8">▶ tick 142 received · sector_reports 2 · swarm_budget max_active_agents 8 · escalation_channel #loft-incident</div>
+    <div class="sub el" data-in="4.4" style="margin-top:14px">Two sectors disagree with the room. One of them is nothing.</div>
+  </div>
+
+  <!-- 3 · the trap -->
+  <div class="scene" id="s3" style="display:none">
+    <div class="head el" data-in="0.2">Tick 900 · the control tick</div>
+    <div class="sub el" data-in="0.5">41 motion events — the highest reading in the whole data set</div>
+    <div class="compare">
+      <div class="card bad el" data-in="1.2">
+        <div class="cap">A swarm that watches movement</div>
+        <div class="verdict">ALARM</div>
+        <p>41 events against a threshold of 3. Escalates, evacuates the main stage, and the feed records a <b>false alarm</b> — worth 20 of the 100 points.</p>
+      </div>
+      <div class="card good el" data-in="2.6">
+        <div class="cap">The gate: every channel, or nothing</div>
+        <div class="verdict">OBSERVE</div>
+        <p>EMF 3 mG, 21 °C, sighting <span class="mono">human-crowd 0.97</span>, holding. One channel is loud; no channel agrees with it. Held.</p>
+      </div>
+    </div>
+    <div class="sub el" data-in="4.2" style="margin-top:26px;font-size:15px">Severity alone ranks this tick at 20.7 — above the outbreak's floor. The trigger is never the number: it is the conjunction of channels.</div>
+  </div>
+
+  <!-- 4 · the swarm -->
+  <div class="scene" id="s4" style="display:none">
+    <div class="head el" data-in="0.2">The swarm · CrewAI, three roles, partial knowledge</div>
+    <div class="agents">
+      <div class="agent el" data-in="0.8"><h3>Sentinel</h3><div class="role">senses</div>
+        <ul><li class="el" data-in="1.6">reads all six sectors</li><li class="el" data-in="2.2">posts raw sightings</li><li class="el" data-in="2.8">no verdict, no authority</li></ul></div>
+      <div class="agent el" data-in="1.1"><h3>Analyst</h3><div class="role">grounds</div>
+        <ul><li class="el" data-in="2.0">checks witnesses on You.com</li><li class="el" data-in="2.6">holds the benign, escalates the real</li><li class="el" data-in="3.2">"party playlist, not a haunting"</li></ul></div>
+      <div class="agent el" data-in="1.4"><h3>Dispatcher</h3><div class="role">acts</div>
+        <ul><li class="el" data-in="2.4">issues one order per incident</li><li class="el" data-in="3.0">evacuate, then seal</li><li class="el" data-in="3.6">posts it into the room</li></ul></div>
+    </div>
+    <div class="sub el" data-in="4.4" style="margin-top:26px">The gate has the last word: a model that wants to act on a single channel cannot spend a false alarm.</div>
+  </div>
+
+  <!-- 5 · the decision -->
+  <div class="scene" id="s5" style="display:none">
+    <div class="head el" data-in="0.2">Tick 143 · catering_coffee_bar</div>
+    <div class="sub el" data-in="0.5">level-5-phantom 0.91 · 4 civilians pinned · sector breached</div>
+    <div class="panel el" data-in="1.0" style="padding:22px;margin-top:22px">
+      <div class="ch"><div class="lab"><span>EMF</span><span class="mono" id="b-emf">0 mG</span></div><div class="bar"><i id="i-emf" style="background:var(--red)"></i></div></div>
+      <div class="ch"><div class="lab"><span>temperature</span><span class="mono" id="b-temp">0 °C</span></div><div class="bar"><i id="i-temp" style="background:var(--blue)"></i></div></div>
+      <div class="ch"><div class="lab"><span>motion</span><span class="mono" id="b-mot">0 events</span></div><div class="bar"><i id="i-mot" style="background:var(--amber)"></i></div></div>
+      <div class="ch"><div class="lab"><span>sighting confidence</span><span class="mono" id="b-conf">0.00</span></div><div class="bar"><i id="i-conf" style="background:var(--purple)"></i></div></div>
+    </div>
+    <div class="row">
+      <div class="stat el" data-in="4.4"><b style="color:var(--red)">EVACUATE</b><span>action ordered</span></div>
+      <div class="stat el" data-in="4.8"><b style="color:var(--green)">0.91</b><span>confidence</span></div>
+      <div class="stat el" data-in="5.2"><b style="color:var(--amber)">4</b><span>civilians saved</span></div>
+    </div>
+    <div class="sub el" data-in="5.8" style="margin-top:20px">The decoy at the entrance — residual-echo at 0.35, holding — is not escalated.</div>
+  </div>
+
+  <!-- 6 · verdicts -->
+  <div class="scene" id="s6" style="display:none">
+    <div class="head el" data-in="0.2">The scored feed judged every tick</div>
+    <table>
+      <tr><th>Tick</th><th>Sector</th><th>Reading</th><th>Our action</th><th>Verdict</th></tr>
+      <tr class="el" data-in="0.9"><td class="mono">142</td><td>catering_coffee_bar</td><td class="mono">98 mG · −4 °C · 4 pinned</td><td class="mono">contain</td><td><span class="badge b-half">adjacent · 0.5</span></td></tr>
+      <tr class="el" data-in="1.7"><td class="mono">143</td><td>catering_coffee_bar</td><td class="mono">131 mG · −7 °C · 4 pinned</td><td class="mono">evacuate</td><td><span class="badge b-ok">correct · 1.0</span></td></tr>
+      <tr class="el" data-in="2.5"><td class="mono">900</td><td>main_stage</td><td class="mono">3 mG · 21 °C · 41 motion</td><td class="mono">observe</td><td><span class="badge b-ok">correct · 1.0</span></td></tr>
+    </table>
+    <div class="row">
+      <div class="stat el" data-in="3.4"><b>3</b><span>submissions</span></div>
+      <div class="stat el" data-in="3.8"><b style="color:var(--green)">2.5</b><span>points</span></div>
+      <div class="stat el" data-in="4.2"><b style="color:var(--green)">0</b><span>false alarms</span></div>
+    </div>
+    <div class="sub el" data-in="5.0" style="margin-top:22px">The referee is deterministic, and its rule — learned from the judgments it returned — is that trapped civilians decide the action.</div>
+  </div>
+
+  <!-- 7 · escalation -->
+  <div class="scene" id="s7" style="display:none">
+    <div class="head el" data-in="0.2">The order leaves the room</div>
+    <div class="dc el" data-in="1.0">
+      <div class="av"></div>
+      <div>
+        <div class="who">team-crimson-raven <span style="color:var(--dim);font-weight:400;font-size:12.5px">via One · Discord</span></div>
+        <div class="body"><b>team-crimson-raven · catering_coffee_bar · evacuate</b><br>
+        tick 143 — level-5-phantom at 0.91, 131 mG, −7 °C, 4 civilians pinned, sector breached. Trapped civilians decide the action: evacuate first, seal after.</div>
+        <div class="meta">#loft-incident · message id 1565115411777851473 · verified by the object Discord returned</div>
+      </div>
+    </div>
+    <div class="sub el" data-in="3.4" style="margin-top:24px">Not a print statement: the send is verified by reading the message back, not by trusting a status code.</div>
+    <div class="sub el" data-in="4.4" style="margin-top:10px">One first; the venue webhook when One has no route into a server a participant cannot install into.</div>
+  </div>
+
+  <!-- 8 · partners + end -->
+  <div class="scene" id="s8" style="display:none">
+    <div class="head el" data-in="0.2">Four partners, each load-bearing</div>
+    <div class="pipe">
+      <div class="pill el" data-in="0.8">CrewAI<small>runs the swarm</small></div><div class="arrow el" data-in="1.2">→</div>
+      <div class="pill el" data-in="1.4">You.com<small>grounds the Analyst</small></div><div class="arrow el" data-in="1.8">→</div>
+      <div class="pill el" data-in="2.0">Parasail<small>serves the model</small></div><div class="arrow el" data-in="2.4">→</div>
+      <div class="pill el" data-in="2.6">One<small>delivers the order</small></div>
+    </div>
+    <div class="big el" data-in="3.4" style="text-align:center">Deterministic where it counts, agentic everywhere else.</div>
+    <div class="row" style="max-width:760px;margin:26px auto 0">
+      <div class="stat el" data-in="4.2"><b style="color:var(--green)">400/400</b><span>outbreaks contained</span></div>
+      <div class="stat el" data-in="4.6"><b style="color:var(--green)">0</b><span>false alarms</span></div>
+      <div class="stat el" data-in="5.0"><b>1.0</b><span>ticks to contain</span></div>
+    </div>
+    <div class="repo el mono" data-in="5.8" style="text-align:center;margin-top:30px;color:var(--purple)">github.com/dmitrypehovski/exorcism-swarm</div>
+  </div>
+
+  <div id="pipe">
+    <div class="step" data-stage="tick"><b>tick</b>scenario feed</div>
+    <div class="step" data-stage="gate"><b>gate</b>deterministic</div>
+    <div class="step" data-stage="swarm"><b>swarm</b>CrewAI roles</div>
+    <div class="step" data-stage="feed"><b>verdict</b>0.5 / 1.0 / 1.0</div>
+    <div class="step" data-stage="room"><b>room</b>Discord via One</div>
+  </div>
+  <div id="vig"></div>
+  <div class="foot">Exorcism Swarm · team-crimson-raven · Track 1</div>
+  <div class="progress" id="prog"></div>
+</div>
+
+<script>
+// Scene timeline in seconds: [id, start, end]
+const SCENES = [
+  ["s1",  0.0,  11.0],
+  ["s2", 11.0,  30.0],
+  ["s3", 30.0,  52.0],
+  ["s4", 52.0,  74.0],
+  ["s5", 74.0,  99.0],
+  ["s6", 99.0, 122.0],
+  ["s7", 122.0, 141.0],
+  ["s8", 141.0, 158.0],
+];
+const TOTAL = SCENES[SCENES.length - 1][2];
+
+// which pipeline step each scene is about
+const STAGE = {s1:null, s2:"tick", s3:"gate", s4:"swarm", s5:"gate", s6:"feed", s7:"room", s8:null};
+const ORDER = ["tick","gate","swarm","feed","room"];
+
+function paintPipe(active){
+  const idx = active ? ORDER.indexOf(active) : -1;
+  for (const el of document.querySelectorAll("#pipe .step")){
+    const i = ORDER.indexOf(el.dataset.stage);
+    el.className = "step" + (i === idx ? " on" : (idx >= 0 && i < idx ? " done" : ""));
+  }
+}
+
+const ease = x => x < 0.5 ? 2*x*x : 1 - Math.pow(-2*x + 2, 2) / 2;
+const clamp = x => Math.max(0, Math.min(1, x));
+
+function render(t) {
+  // progress bar
+  document.getElementById("prog").style.width = (100 * clamp(t / TOTAL)) + "%";
+
+  for (const [id, start, end] of SCENES) {
+    const sc = document.getElementById(id);
+    const local = t - start;
+    const visible = (t >= start && t < end);
+    sc.style.display = visible ? "block" : "none";
+    if (!visible) continue;
+    paintPipe(STAGE[id]);
+
+    for (const el of sc.querySelectorAll(".el")) {
+      const inAt = parseFloat(el.dataset.in || "0");
+      const appear = clamp((local - inAt) / 0.75);
+      const leave = clamp((end - t) / 0.5);
+      const a = Math.min(ease(appear), ease(leave));
+      el.style.opacity = a.toFixed(3);
+      el.style.transform = "translateY(" + ((1 - ease(appear)) * 16).toFixed(1) + "px)";
+    }
+
+    // scene-specific animation
+    if (id === "s5") {
+      const p = clamp((local - 1.6) / 2.4);
+      const emf = Math.round(131 * p), temp = (-7 * p), mot = Math.round(24 * p), conf = (0.91 * p);
+      document.getElementById("b-emf").textContent = emf + " mG";
+      document.getElementById("b-temp").textContent = temp.toFixed(0) + " °C";
+      document.getElementById("b-mot").textContent = mot + " events";
+      document.getElementById("b-conf").textContent = conf.toFixed(2);
+      document.getElementById("i-emf").style.width = clamp(emf / 140) * 100 + "%";
+      document.getElementById("i-temp").style.width = clamp(-temp / 10) * 100 + "%";
+      document.getElementById("i-mot").style.width = clamp(mot / 30) * 100 + "%";
+      document.getElementById("i-conf").style.width = clamp(conf) * 100 + "%";
+    }
+    if (id === "s2") {
+      const p = clamp((local - 1.6) / 3.0);
+      document.getElementById("c-emf").textContent = Math.round(98 * p) + " mG";
+      document.getElementById("c-temp").textContent = (p > 0 ? "−" + Math.round(4 * p) : "0") + " °C";
+    }
+  }
+}
+window.render = render;
+window.TOTAL = TOTAL;
+render(0);
+</script>
+</body>
+</html>
