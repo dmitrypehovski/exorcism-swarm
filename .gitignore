@@ -11,3 +11,6 @@ tmp/
 vo/*.wav
 preview-*.png
 *.pcm
+mcp-stderr.log
+out/
+__pycache__/
