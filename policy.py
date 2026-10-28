@@ -81,6 +81,25 @@ PRIORITY_CONFIDENCE = 0.5
 SEALED = ("holding", "sealed")
 
 
+def swarm_budget(obs: dict) -> dict:
+    """The tick's own budget, read before anything is dispatched.
+
+    The rubric counts exceeding `max_active_agents` as a scored failure, so the cap is enforced in
+    code rather than left to the crew. The local simulator sends no budget; absent means unlimited.
+    """
+    b = obs.get("swarm_budget") or {}
+    try:
+        cap = int(b.get("max_active_agents") or 0)
+    except (TypeError, ValueError):
+        cap = 0
+    return {"max_active_agents": cap, "api_credits_remaining": b.get("api_credits_remaining")}
+
+
+def within_budget(dispatched: int, cap: int) -> bool:
+    """One active agent per containment order. A cap of zero or less means none was stated."""
+    return cap <= 0 or dispatched < cap
+
+
 def severity_of(report: dict) -> float:
     """A single number for how bad a sector reads, from its sensors and its sighting."""
     sensors = report.get("sensors") or {}

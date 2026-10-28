@@ -219,3 +219,29 @@ python main.py                  # the live run
 - Inference: Parasail primary, OpenRouter fallback verified live
 - One dispatch: **verified in Slack and Linear** (ARL-5 through ARL-9)
 - Deterministic gate: wired into the order path as the final veto
+
+## What this checkout proves, in one command
+
+```bash
+python prove.py --seeds 100
+```
+
+Four blocks, each the evidence for one line of the venue rubric: the four partners answering live
+on their own credentials, the feed's own verdicts replayed as assertions, a seeded sweep of the
+facility, and a ledger of what passed. It reports a partner it cannot reach as unusable rather than
+quietly substituting one — the current output is `5/6 blocks passed, partners answering: 3/4`.
+
+## Partner roles, none of them a passthrough
+
+| Partner | What it does here | Where |
+|---|---|---|
+| CrewAI | Runs the swarm: Sentinel reads sensors, Analyst reads witnesses and the web, Dispatcher orders containment | `main.py` |
+| You.com | Grounds the Analyst on its own key and endpoint (`POST https://ydc-index.io/v1/search`, `X-API-Key`) | `youcom.py` |
+| Parasail | Serves the model for the crew, first choice; a key without a payment method is refused by Parasail and the run says so | `llm.py` |
+| One | Delivers the order into a real app (Slack, Linear) and is the first route for the venue channel | `dispatch.py`, `one_cli.py` |
+
+## The tick's budget is enforced, not assumed
+
+`swarm_budget.max_active_agents` is a scored limit. `policy.swarm_budget` reads it and
+`policy.within_budget` refuses an order that would exceed it; the refusal is printed and recorded
+in the run log. Regression: `tests/test_decisions.py`.

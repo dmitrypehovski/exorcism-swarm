@@ -13,7 +13,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 from feed_mcp import fixtures  # noqa: E402
-from policy import decide_tick, engaged, severity_of  # noqa: E402
+from policy import decide_tick, swarm_budget, within_budget, engaged, severity_of  # noqa: E402
 
 FAILURES = []
 
@@ -45,6 +45,13 @@ def main() -> int:
     print("severity alone must never trigger: motion inflates the control tick")
     check("control tick severity above the outbreak's floor",
           severity_of(control[900]["sector_reports"][0]) > 10, True)
+
+    print("the tick's budget is a scored limit, not decoration")
+    check("no budget stated means no limit", swarm_budget({})["max_active_agents"], 0)
+    check("a stated cap is read", swarm_budget({"swarm_budget": {"max_active_agents": 2}})["max_active_agents"], 2)
+    check("one agent may go out under a cap of two", within_budget(0, 2), True)
+    check("the third is refused under a cap of two", within_budget(2, 2), False)
+    check("no cap never refuses", within_budget(9, 0), True)
 
     print(f"\n{'all checks passed' if not FAILURES else str(len(FAILURES)) + ' FAILED: ' + ', '.join(FAILURES)}")
     return 1 if FAILURES else 0

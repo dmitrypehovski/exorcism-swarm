@@ -33,7 +33,7 @@ from pathlib import Path
 from feed import FeedError, open_feed
 from one_cli import OneError, load_env, preflight, redact, resolve, resolve_all, say
 from parasail import ParasailError, check_model, model_id
-from policy import zone_verdict
+from policy import swarm_budget, within_budget, zone_verdict
 
 OUT = Path("out")
 ZONE_ACTIONS = ("exorcise", "evacuate")
@@ -50,7 +50,7 @@ RULES = (
 
 # --- the crew -----------------------------------------------------------------
 
-def build_crew(llm, rnd, outbox, web_tools, search: dict, verbose: bool):
+def build_crew(llm, rnd, outbox, web_tools, verbose: bool):
     from crewai import Agent, Crew, Process, Task
 
     import tools
@@ -64,11 +64,9 @@ def build_crew(llm, rnd, outbox, web_tools, search: dict, verbose: bool):
 
     web_note = ""
     if web_tools:
-        web_note = (
-            f" To check a sighting against the outside world, use One: the You.com search action is '{search['action_id']}' "
-            f"on platform 'you' with connectionKey '{search['key']}'. Read its documentation once by calling find_one_actions with "
-            f"load set to exactly [{{\"action_id\": \"{search['action_id']}\"}}], then call execute_one_action with "
-            "queryParamsJson set to exactly {\"query\": \"<terms>\", \"count\": 3}. At most two searches per tick.")
+        web_note = (" To check a sighting against the outside world, call youcom_search (the You.com Search API on its own "
+                    "key). One query at a time, at most two per tick, and prefer the mundane explanation a real building "
+                    "would produce: HVAC work, a party, a fog machine, wiring, a costume.")
     analyst = Agent(
         role="Analyst",
         goal="Decide, for each sighting, whether it is a real paranormal outbreak or a false alarm with a mundane cause",
@@ -241,6 +239,7 @@ def run(args) -> int:
     # Parasail is the event's inference partner and the default. If it refuses inference (a key
     # without a payment method returns 403), the swarm falls back to OpenRouter and says so.
     import llm as llm_provider
+    import youcom
 
     say(f"model provider: {llm_provider.provider_note()}")
     if llm_provider.resolve()["provider"] == "none":
@@ -279,13 +278,12 @@ def run(args) -> int:
         say("preflight ok")
         return 0
 
-    search: dict = {}
+    # Grounding runs on You.com's own key and endpoint. Relaying it through One would be the
+    # "partner used as a passthrough" the rubric scores as unused; One is reserved for the action.
+    web_tools = youcom.youcom_tools()
+    if not web_tools:
+        say("YDC_API_KEY is empty: the Analyst runs without web grounding.")
     adapter = contextlib.nullcontext([])
-    if keys.get("you"):
-        # The Analyst's MCP server sees one connection and one action: You.com's GET search.
-        search = {"key": keys["you"], "action_id": resolve("you", "search web and news", "GET", "/v1/search")}
-        from crewai_tools import MCPServerAdapter
-        adapter = MCPServerAdapter(one_mcp_params([search["key"]], [search["action_id"]]), connect_timeout=120)
 
     llm = llm_provider.crew_llm()
     rnd = Round()
@@ -294,8 +292,7 @@ def run(args) -> int:
     # Wrapped once, reset every tick: wrapping again each tick would stack the caps on the same tools.
     budget = {"n": 0}
     with adapter as mcp_tools:
-        web_tools = []
-        if mcp_tools:
+        if mcp_tools:  # kept so a One-scoped tool set can be added back without touching this block
             web_tools = capped([t for t in harden_execute(dropping_nulls(list(mcp_tools)))
                                 if t.name in ("find_one_actions", "execute_one_action")], 2, budget)
         while not feed.done:
@@ -304,7 +301,7 @@ def run(args) -> int:
             observed_at[obs["tick"]] = time.time()
             say(f"\ntick {obs['tick']}/{obs.get('ticks_total')}: the swarm is looking")
             budget["n"] = 0
-            crew = build_crew(llm, rnd, outbox, web_tools, search, args.verbose)
+            crew = build_crew(llm, rnd, outbox, web_tools, args.verbose)
             try:
                 out = crew.kickoff()
                 orders, held = parse_orders(getattr(out, "raw", str(out)), obs.get("zones", []))
@@ -315,6 +312,10 @@ def run(args) -> int:
                 say(f"  held {h.get('zone')}: {h.get('reason', '')}")
             if not orders:
                 say("  no containment orders this tick")
+            cap = swarm_budget(obs)["max_active_agents"]
+            if cap:
+                say(f"  swarm_budget: at most {cap} active agents this tick")
+            dispatched = 0
             for order in orders:
                 if order["zone"] in rnd.contained:
                     say(f"  skipped {order['zone']}: already contained")
@@ -326,7 +327,12 @@ def run(args) -> int:
                     say(f"  gate held {order['zone']}: {gate['reason']}")
                     held.append({"zone": order["zone"], "reason": f"gate: {gate['reason']}"})
                     continue
+                if not within_budget(dispatched, cap):
+                    say(f"  budget held {order['zone']}: {cap} active agents already out")
+                    held.append({"zone": order["zone"], "reason": f"swarm_budget: {cap} active agents"})
+                    continue
                 carry_out(order, feed, outbox, rnd, observed_at, timings)
+                dispatched += 1
             feed.advance()
 
     scoreboard(feed.score(), timings, mode, feed.source, time.time() - started, outbox)

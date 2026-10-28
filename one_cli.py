@@ -95,6 +95,25 @@ def _uncertain(message: str) -> bool:
     return bool(SERVER_ERROR_RE.search(low)) or any(token in low for token in UNCERTAIN)
 
 
+# The One CLI refuses to run on Node builds that trust the compromised eMudhra roots: it needs
+# 22.23.4+, 24.22.1+ or 26.12.1+. A machine can have several Nodes, and the one first in PATH is
+# often not the good one, so a known-good interpreter is put in front for the child process only.
+NODE_CANDIDATES = (
+    "/root/.hermes/tools/node-26.12.1-linux-x64/bin",
+    "/usr/local/lib/nodejs/node-v26.12.1/bin",
+    "/usr/local/bin",
+)
+
+
+def _env_with_good_node() -> dict:
+    env = dict(os.environ)
+    for candidate in NODE_CANDIDATES:
+        if os.path.isfile(os.path.join(candidate, "node")):
+            env["PATH"] = candidate + os.pathsep + env.get("PATH", "")
+            break
+    return env
+
+
 def one(*args: object, timeout: int = 300, retries: int = 0):
     """Run `one --agent <args>` and return the parsed JSON.
 
@@ -107,7 +126,8 @@ def one(*args: object, timeout: int = 300, retries: int = 0):
     label = " ".join(cmd[2:5])
     for attempt in range(retries + 1):
         try:
-            proc = subprocess.run(cmd, capture_output=True, text=True, timeout=timeout)
+            proc = subprocess.run(cmd, capture_output=True, text=True, timeout=timeout,
+                                  env=_env_with_good_node())
         except FileNotFoundError as exc:
             raise OneError("the `one` CLI is not installed. Run: npm i -g @withone/cli") from exc
         except subprocess.TimeoutExpired as exc:
