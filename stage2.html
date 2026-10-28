@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Exorcism Swarm — incident record</title>
+<style>
+  /* An incident record, not a dashboard: paper, hairlines, typewriter figures, one verdict colour. */
+  :root{
+    --paper:#F7F6F2; --ink:#15181C; --muted:#6E7378; --rule:#D5D3CB;
+    --red:#B3261E; --green:#1F6F3D;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{width:1280px;height:720px;overflow:hidden;background:var(--paper);color:var(--ink);
+    font-family:"DejaVu Sans",Helvetica,Arial,sans-serif}
+  #stage{position:relative;width:1280px;height:720px;padding:52px 72px 64px}
+  .el{opacity:0}
+
+  .mono{font-family:"DejaVu Sans Mono",monospace;font-variant-numeric:tabular-nums}
+  .eyebrow{font-size:12.5px;letter-spacing:.18em;text-transform:uppercase;color:var(--muted)}
+  .rule{height:1px;background:var(--rule)}
+
+  /* running head, present in every scene */
+  #head{position:absolute;top:0;left:72px;right:72px;height:52px;display:flex;align-items:center;
+    justify-content:space-between;border-bottom:1px solid var(--rule);font-size:12.5px;
+    letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+  #head b{color:var(--ink);letter-spacing:.06em}
+  #foot{position:absolute;bottom:0;left:72px;right:72px;height:44px;display:flex;align-items:center;
+    justify-content:space-between;border-top:1px solid var(--rule);font-size:12.5px;color:var(--muted)}
+  #bar{position:absolute;top:0;left:0;height:3px;background:var(--ink);width:0}
+
+  h1{font-size:54px;line-height:1.05;letter-spacing:-.02em}
+  h2{font-size:34px;letter-spacing:-.015em}
+  .lede{font-size:19px;color:#3C4147;line-height:1.5;max-width:940px}
+
+  /* figures laid out like a printed table */
+  table{width:100%;border-collapse:collapse}
+  th{font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);
+    text-align:left;padding:0 0 10px;font-weight:400}
+  th.n,td.n{text-align:right}
+  td{padding:15px 0;border-top:1px solid var(--rule);font-size:18px;vertical-align:top}
+  tr.tot td{border-top:2px solid var(--ink);font-weight:700}
+  .big{font-size:40px;font-weight:700;letter-spacing:-.02em}
+  .red{color:var(--red)} .green{color:var(--green)}
+
+  /* the one bold element: a stamp */
+  .stamp{position:absolute;right:72px;padding:12px 22px;border:3px solid var(--red);color:var(--red);
+    font-size:34px;font-weight:700;letter-spacing:.06em;transform:rotate(-7deg);text-transform:uppercase}
+  .stamp.grey{border-color:var(--muted);color:var(--muted)}
+  .stamp.green{border-color:var(--green);color:var(--green)}
+
+  .kv{display:flex;gap:14px;font-size:17px;align-items:baseline}
+  .kv span{color:var(--muted)}
+  .quote{border-left:3px solid var(--rule);padding:4px 0 4px 22px;font-size:18px;line-height:1.6}
+  .partners{display:flex;gap:44px;margin-top:8px}
+  .partners div{font-size:17px}
+  .partners b{display:block;font-size:20px;letter-spacing:-.01em}
+  .partners span{color:var(--muted);font-size:14.5px}
+</style>
+</head>
+<body>
+<div id="stage">
+  <div id="bar"></div>
+  <div id="head">
+    <div>Exorcism Swarm <b>· incident record</b></div>
+    <div id="hright" class="mono">facility aws-builder-loft-sf</div>
+  </div>
+
+  <!-- 1 -->
+  <div class="scene" id="s1" style="display:none;padding-top:44px">
+    <div class="eyebrow el" data-in="0.1">Track 1 · The Exorcism Protocol · You.com Halloween Hack 2026</div>
+    <h1 class="el" data-in="0.5" style="margin-top:22px">A paranormal outbreak is spreading<br>through the facility.</h1>
+    <div class="lede el" data-in="1.5" style="margin-top:26px">
+      Six sectors report sensors and sightings every tick. Three of the last three ticks were either a
+      haunting or a crowd — and one of them was designed to look like both.
+    </div>
+    <div class="el" data-in="2.6" style="margin-top:34px;font-size:17px;color:var(--muted)">
+      This is what our swarm reported, and what the venue feed scored.
+    </div>
+  </div>
+
+  <!-- 2 -->
+  <div class="scene" id="s2" style="display:none;padding-top:40px">
+    <div class="eyebrow el" data-in="0.1">Tick 143 · 21:18 UTC · sector_reports 2</div>
+    <h2 class="el" data-in="0.4" style="margin-top:14px">Catering is breached, and four people are inside.</h2>
+    <table style="margin-top:26px">
+      <tr><th>Sector</th><th class="n">EMF mG</th><th class="n">temp °C</th><th class="n">motion</th><th class="n">sighting</th><th class="n">civilians</th><th class="n">state</th></tr>
+      <tr class="el" data-in="1.1"><td>catering_coffee_bar</td><td class="n mono" id="v1">0</td><td class="n mono" id="v2">0</td><td class="n mono" id="v3">0</td><td class="n mono" id="v4">0.00</td><td class="n">4 pinned</td><td class="n red">breached</td></tr>
+      <tr class="el" data-in="1.7"><td>entrance</td><td class="n mono">44</td><td class="n mono">11</td><td class="n mono">6</td><td class="n mono">0.35</td><td class="n">clear</td><td class="n">holding</td></tr>
+    </table>
+    <div class="quote el" data-in="2.8" style="margin-top:30px">
+      EMF and temperature disagree with the room together, so it is real. The entrance reads one
+      channel and a 0.35 echo: not escalated.
+    </div>
+    <div class="el" data-in="3.0" style="margin-top:30px;display:flex;gap:54px">
+      <div><div class="eyebrow">Gate rule</div><div class="mono" style="font-size:16px;margin-top:6px">EMF and temp out of band together</div></div>
+      <div><div class="eyebrow">Action</div><div class="mono" style="font-size:16px;margin-top:6px">evacuate — civilians trapped</div></div>
+      <div><div class="eyebrow">Decoy</div><div class="mono" style="font-size:16px;margin-top:6px">residual-echo 0.35 not escalated</div></div>
+    </div>
+    <div class="stamp el" data-in="3.8" style="bottom:96px;right:120px">evacuate</div>
+  </div>
+
+  <!-- 3 -->
+  <div class="scene" id="s3" style="display:none;padding-top:40px">
+    <div class="eyebrow el" data-in="0.1">Tick 900 · control · main_stage</div>
+    <h2 class="el" data-in="0.4" style="margin-top:14px">Forty-one motion events. The highest reading in the data set.</h2>
+    <table style="margin-top:26px">
+      <tr><th>Sector</th><th class="n">EMF mG</th><th class="n">temp °C</th><th class="n">motion</th><th class="n">sighting</th><th class="n">civilians</th><th class="n">state</th></tr>
+      <tr class="el" data-in="1.1"><td>main_stage</td><td class="n mono">3</td><td class="n mono">21</td><td class="n mono" id="m1">0</td><td class="n mono">human-crowd 0.97</td><td class="n">clear</td><td class="n">holding</td></tr>
+    </table>
+    <div class="quote el" data-in="2.4" style="margin-top:30px">
+      A swarm that watches movement escalates here and the feed records a false alarm. Our gate reads
+      the conjunction: one loud channel, no channel agreeing with it.
+    </div>
+    <div class="el" data-in="3.0" style="margin-top:30px;display:flex;gap:54px">
+      <div><div class="eyebrow">Gate rule</div><div class="mono" style="font-size:16px;margin-top:6px">one channel out of band is benign</div></div>
+      <div><div class="eyebrow">Action</div><div class="mono" style="font-size:16px;margin-top:6px">observe — no order</div></div>
+      <div><div class="eyebrow">Cost if wrong</div><div class="mono" style="font-size:16px;margin-top:6px">a false alarm, 20 of 100 points</div></div>
+    </div>
+    <div class="stamp grey el" data-in="3.4" style="bottom:96px;right:120px">hold</div>
+  </div>
+
+  <!-- 4 -->
+  <div class="scene" id="s4" style="display:none;padding-top:40px">
+    <div class="eyebrow el" data-in="0.1">What the venue feed scored</div>
+    <h2 class="el" data-in="0.4" style="margin-top:14px">Three ticks, three judgments.</h2>
+    <table style="margin-top:26px">
+      <tr><th>Tick</th><th>Sector</th><th>Reading</th><th>We reported</th><th class="n">Judgment</th></tr>
+      <tr class="el" data-in="1.0"><td class="mono">142</td><td>catering_coffee_bar</td><td class="mono">98 mG · −4 °C · 4 pinned</td><td class="mono">contain</td><td class="n"><span class="red">adjacent</span> <span class="mono">0.5</span></td></tr>
+      <tr class="el" data-in="1.8"><td class="mono">143</td><td>catering_coffee_bar</td><td class="mono">131 mG · −7 °C · 4 pinned</td><td class="mono">evacuate</td><td class="n"><span class="green">correct</span> <span class="mono">1.0</span></td></tr>
+      <tr class="el" data-in="2.6"><td class="mono">900</td><td>main_stage</td><td class="mono">3 mG · 21 °C · 41 motion</td><td class="mono">observe</td><td class="n"><span class="green">correct</span> <span class="mono">1.0</span></td></tr>
+      <tr class="tot el" data-in="3.4"><td></td><td>3 submissions</td><td>0 false alarms</td><td></td><td class="n big">2.5</td></tr>
+    </table>
+    <div class="el" data-in="4.2" style="margin-top:24px;font-size:17px;color:var(--muted)">
+      The referee is deterministic. Its rule, learned from the judgments it returned: trapped civilians decide the action.
+    </div>
+  </div>
+
+  <!-- 5 -->
+  <div class="scene" id="s5" style="display:none;padding-top:40px">
+    <div class="eyebrow el" data-in="0.1">The order, as posted to the room</div>
+    <h2 class="el" data-in="0.4" style="margin-top:14px">#loft-incident</h2>
+    <div class="quote el" data-in="1.0" style="margin-top:26px;font-size:19px">
+      <b>team-crimson-raven · catering_coffee_bar · evacuate</b><br>
+      tick 143 — level-5-phantom 0.91, 131 mG, −7 °C, 4 civilians pinned, sector breached.
+      Trapped civilians decide the action: evacuate first, seal after.
+    </div>
+    <table style="margin-top:30px">
+      <tr><th>Route</th><th>Verification</th><th class="n">Message id</th></tr>
+      <tr class="el" data-in="2.2"><td>One, then the venue webhook</td><td>read back from the channel</td><td class="n mono">1565115411777851473</td></tr>
+    </table>
+    <div class="el" data-in="3.0" style="margin-top:26px;font-size:17px;color:var(--muted)">
+      One first — the channel as a path variable. A participant cannot install an app into the venue's server, so the
+      brief's own webhook carries it, and the code says which route was used.
+    </div>
+  </div>
+
+  <!-- 6 -->
+  <div class="scene" id="s6" style="display:none;padding-top:40px">
+    <div class="eyebrow el" data-in="0.1">How it is built</div>
+    <h2 class="el" data-in="0.4" style="margin-top:14px">Every partner carries a load.</h2>
+    <div class="partners" style="margin-top:30px">
+      <div class="el" data-in="0.6"><b>CrewAI</b><span>runs the swarm</span></div>
+      <div class="el" data-in="0.9"><b>You.com</b><span>grounds the Analyst</span></div>
+      <div class="el" data-in="1.2"><b>Parasail</b><span>serves the model</span></div>
+      <div class="el" data-in="1.5"><b>One</b><span>delivers the order</span></div>
+    </div>
+    <div class="rule el" data-in="2.0" style="margin-top:34px"></div>
+    <div class="el" data-in="2.4" style="margin-top:26px;display:flex;gap:60px">
+      <div><div class="eyebrow">Seeded facilities</div><div class="big">200</div></div>
+      <div><div class="eyebrow">Outbreaks contained</div><div class="big green">400 / 400</div></div>
+      <div><div class="eyebrow">False alarms</div><div class="big green">0</div></div>
+      <div><div class="eyebrow">Ticks to contain</div><div class="big">1.0</div></div>
+    </div>
+    <div class="el" data-in="3.4" style="margin-top:34px;font-size:17px">
+      <span class="mono">github.com/dmitrypehovski/exorcism-swarm</span>
+    </div>
+  </div>
+
+  <div id="foot">
+    <div class="mono">team-crimson-raven</div>
+    <div class="mono" id="fpage"></div>
+  </div>
+</div>
+
+<script>
+// Deliberately brisk: 64 seconds, six records, most of the text already on screen by second 3.
+const SCENES = [
+  ["s1",  0.0, 11.0, "facility aws-builder-loft-sf", ""],
+  ["s2", 11.0, 25.0, "tick 143", "record 2 / 6"],
+  ["s3", 25.0, 37.0, "tick 900", "record 3 / 6"],
+  ["s4", 37.0, 50.0, "scoreboard", "record 4 / 6"],
+  ["s5", 50.0, 58.0, "escalation", "record 5 / 6"],
+  ["s6", 58.0, 68.0, "build", "record 6 / 6"],
+];
+const TOTAL = SCENES[SCENES.length - 1][2];
+const ease = x => x < 0.5 ? 2*x*x : 1 - Math.pow(-2*x + 2, 2)/2;
+const clamp = x => Math.max(0, Math.min(1, x));
+
+function render(t){
+  document.getElementById("bar").style.width = (100 * clamp(t/TOTAL)) + "%";
+  for (const [id, start, end, head, page] of SCENES){
+    const sc = document.getElementById(id);
+    const local = t - start;
+    const on = (t >= start && t < end);
+    sc.style.display = on ? "block" : "none";
+    if (!on) continue;
+    document.getElementById("hright").textContent = head;
+    document.getElementById("fpage").textContent = page;
+    for (const el of sc.querySelectorAll(".el")){
+      const inAt = parseFloat(el.dataset.in || "0");
+      const a = Math.min(ease(clamp((local - inAt)/0.5)), ease(clamp((end - t)/0.35)));
+      el.style.opacity = a.toFixed(3);
+    }
+    // figures count up quickly, in a quarter of a second
+    if (id === "s2"){
+      const p = clamp((local - 1.1)/0.55);
+      document.getElementById("v1").textContent = Math.round(131*p);
+      document.getElementById("v2").textContent = (p>0 ? "−" + Math.round(7*p) : "0");
+      document.getElementById("v3").textContent = Math.round(24*p);
+      document.getElementById("v4").textContent = (0.91*p).toFixed(2);
+    }
+    if (id === "s3"){
+      const p = clamp((local - 1.1)/0.55);
+      document.getElementById("m1").textContent = Math.round(41*p);
+    }
+  }
+}
+window.render = render;
+window.TOTAL = TOTAL;
+render(0);
+</script>
+</body>
+</html>
