@@ -13,7 +13,7 @@ FORM = ("https://docs.google.com/forms/d/e/"
 TEAM_HANDLE = "team-crimson-raven"
 REPO = "https://github.com/dmitrypehovski/exorcism-swarm"
 # Pinned to the commit: jsDelivr caches @main, and an immutable URL always serves the cut we mean.
-VIDEO = ("https://cdn.jsdelivr.net/gh/dmitrypehovski/exorcism-swarm@5f59c93906a1ba78132c8c4659b53d77dbeccad0/"
+VIDEO = ("https://cdn.jsdelivr.net/gh/dmitrypehovski/exorcism-swarm@6e1e2587ab992c045fcd7121a6153a4686c98b48/"
          "demo/exorcism-swarm-demo.mp4")
 
 DESCRIPTION = (
