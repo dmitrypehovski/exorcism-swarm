@@ -236,8 +236,14 @@ def run(args) -> int:
         scoreboard(feed.score(), timings, mode, feed.source, time.time() - started, None)
         return 0
 
-    # Model first: a wrong model id fails here in a second instead of mid-run.
-    say(f"Parasail model: {check_model()}")
+    # Model first: a wrong provider fails here in a second instead of mid-run.
+    # Parasail is the event's inference partner and the default. If it refuses inference (a key
+    # without a payment method returns 403), the swarm falls back to OpenRouter and says so.
+    import llm as llm_provider
+
+    say(f"model provider: {llm_provider.provider_note()}")
+    if llm_provider.resolve()["provider"] == "none":
+        raise ParasailError(llm_provider.resolve()["reason"])
 
     from tools import Outbox, Round, capped, dropping_nulls, harden_execute, linear_team_id, one_mcp_params
 
@@ -280,9 +286,7 @@ def run(args) -> int:
         from crewai_tools import MCPServerAdapter
         adapter = MCPServerAdapter(one_mcp_params([search["key"]], [search["action_id"]]), connect_timeout=120)
 
-    from parasail import crew_llm
-
-    llm = crew_llm()
+    llm = llm_provider.crew_llm()
     rnd = Round()
     timings: list = []
     observed_at: dict = {}

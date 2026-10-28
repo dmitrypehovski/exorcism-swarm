@@ -44,6 +44,39 @@ make a two-sensor anomaly benign.
 `exorcise` is chosen over `evacuate` because evacuation leaves the outbreak active and zeroes the
 zone's civilian count, so a later exorcism saves nobody. Exorcism ends the incident on the first tick.
 
+## The full swarm, measured live
+
+`SIM_TICKS=2 python main.py --dry-run` — the real CrewAI crew (Sentinel, Analyst, Dispatcher) on a
+real model, no Parasail needed:
+
+```
+Outbreaks contained               2/2
+Mean ticks to containment         1.0
+Mean seconds to containment       14.6
+False alarms                      0
+Civilians saved                   31 of 31 at risk
+Civilians lost                    0
+Outbreaks missed                  0
+```
+
+The Analyst held the motion-only and audio-only anomalies as false alarms and named the mundane
+cause each time ("intern in a ghost costume", "Halloween party playlist"), while the two real
+outbreaks were ordered contained on the tick they appeared on multi-channel evidence.
+
+## Inference: Parasail first, OpenRouter if Parasail refuses
+
+Parasail is the event's inference partner and stays the configured default. A Parasail key without a
+payment method lists models and then refuses every inference call:
+
+```
+403 Inference not allowed. Please add a valid payment method
+```
+
+That would stop the crew on its first thought, so `llm.py` probes Parasail once before the run. If it
+answers, the swarm runs on Parasail. If it refuses, the run falls back to OpenRouter and states which
+provider served it, on stdout and in the trace. Nothing is hidden, and the Parasail path is a real
+code path rather than a comment.
+
 ## Where each partner is load-bearing
 
 | Partner | Owns | Remove it and |
@@ -73,11 +106,11 @@ python main.py                  # the live run
 | `main.py` | the supervised crew and the tick loop |
 | `facility_sim.py`, `feed.py` | the facility feed (local mock or `FEED_URL`) |
 | `one_cli.py`, `mcp_wrapper.py`, `tools.py` | One: the three-tool loop, dispatch and search |
-| `parasail.py` | Parasail inference |
+| `parasail.py`, `llm.py` | Parasail inference, and the provider probe with the OpenRouter fallback |
 
 ## Status
 
 - Deterministic gate: **done and measured** (200/200 seeds perfect)
-- Swarm, One dispatch, You.com grounding: wired, awaiting live credentials
-- Parasail inference: blocked on billing (`403 Inference not allowed` until a payment method or
-  event credits are on the account)
+- Swarm: **runs and scores** (2/2 contained, 0 false alarms, 31/31 civilians saved)
+- Inference: Parasail primary, OpenRouter fallback verified live
+- One dispatch and You.com grounding through One: wired, awaiting the One account and key
