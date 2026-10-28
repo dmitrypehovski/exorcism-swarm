@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Exorcism Swarm — the machine, running</title>
+<style>
+  /* A chart recorder on paper: the record draws itself, then the printout, then the proof. */
+  :root{
+    --paper:#F7F6F2; --ink:#15181C; --muted:#6E7378; --rule:#D5D3CB;
+    --red:#B3261E; --green:#1F6F3D; --blue:#1F4E79; --amber:#8A6100;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{width:1280px;height:720px;overflow:hidden;background:var(--paper);color:var(--ink);
+    font-family:"DejaVu Sans",Helvetica,Arial,sans-serif}
+  #stage{position:relative;width:1280px;height:720px}
+  .el{opacity:0}
+  .mono{font-family:"DejaVu Sans Mono",monospace;font-variant-numeric:tabular-nums}
+  .eyebrow{font-size:12px;letter-spacing:.2em;text-transform:uppercase;color:var(--muted)}
+  #head{position:absolute;top:0;left:64px;right:64px;height:46px;display:flex;align-items:center;
+    justify-content:space-between;border-bottom:1px solid var(--rule);font-size:12px;
+    letter-spacing:.16em;text-transform:uppercase;color:var(--muted)}
+  #head b{color:var(--ink)}
+  #bar{position:absolute;top:0;left:0;height:3px;background:var(--ink);width:0}
+  #foot{position:absolute;bottom:0;left:64px;right:64px;height:40px;display:flex;align-items:center;
+    justify-content:space-between;border-top:1px solid var(--rule);font-size:12px;color:var(--muted)}
+  .scene{position:absolute;top:46px;left:64px;right:64px;bottom:40px;padding-top:34px}
+  h1{font-size:46px;line-height:1.1;letter-spacing:-.02em;max-width:1000px}
+  h2{font-size:30px;letter-spacing:-.015em}
+  .lede{font-size:18px;color:#3C4147;line-height:1.5}
+
+  /* chart-recorder panel */
+  .plot{position:relative;border:1px solid var(--rule);background:#FFFDF8}
+  .plot .grid{position:absolute;inset:0}
+  .plot svg{position:absolute;inset:0}
+  .labels{position:absolute;left:0;right:0;bottom:-26px;display:flex;gap:26px;font-size:12.5px;color:var(--muted)}
+  .labels i{display:inline-block;width:9px;height:9px;margin-right:6px;vertical-align:middle}
+  .verdict{position:absolute;padding:9px 18px;border:3px solid;font-size:26px;font-weight:700;
+    letter-spacing:.06em;text-transform:uppercase;transform:rotate(-6deg)}
+  .verdict.red{border-color:var(--red);color:var(--red)}
+  .verdict.grey{border-color:var(--muted);color:var(--muted)}
+
+  /* teletype printout */
+  .tele{border-left:3px solid var(--rule);padding-left:20px}
+  .tele div{font-size:16.5px;line-height:1.75;white-space:pre}
+  .json{border:1px solid var(--rule);background:#FFFDF8;padding:16px 20px}
+  .json div{font-size:16.5px;line-height:1.7;white-space:pre}
+  .k{color:var(--blue)} .s{color:var(--green)} .n{color:var(--red)}
+  table{width:100%;border-collapse:collapse}
+  th{font-size:11.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);text-align:left;
+    padding:0 0 8px;font-weight:400}
+  th.r,td.r{text-align:right}
+  td{padding:11px 0;border-top:1px solid var(--rule);font-size:16.5px}
+  .big{font-size:34px;font-weight:700}
+  .partners{display:flex;gap:40px}
+  .partners b{font-size:19px;display:block}
+  .partners span{font-size:14px;color:var(--muted)}
+</style>
+</head>
+<body>
+<div id="stage">
+  <div id="bar"></div>
+  <div id="head"><div>Exorcism Swarm <b>· the machine, running</b></div><div class="mono" id="hright"></div></div>
+
+  <!-- 1 -->
+  <div class="scene" id="s1" style="display:none;padding-top:64px">
+    <div class="eyebrow el" data-in="0.05">Track 1 · The Exorcism Protocol · You.com Halloween Hack 2026</div>
+    <h1 class="el" data-in="0.35" style="margin-top:20px">Three ticks. Two were a haunting.<br>One was a crowd of forty-one people.</h1>
+    <div class="lede el" data-in="1.1" style="margin-top:22px;max-width:900px">
+      Telling those apart is the whole problem — and a false alarm costs a fifth of the score.
+      Here is the swarm deciding, and the feed judging.
+    </div>
+  </div>
+
+  <!-- 2 -->
+  <div class="scene" id="s2" style="display:none">
+    <div class="eyebrow el" data-in="0.05">Sector catering_coffee_bar · sensors, tick 143</div>
+    <div class="plot el" data-in="0.3" style="height:320px;margin-top:16px">
+      <svg id="plot1" width="100%" height="320" viewBox="0 0 1152 320" preserveAspectRatio="none"></svg>
+      <div class="labels">
+        <div><i style="background:var(--red)"></i>EMF mG</div>
+        <div><i style="background:var(--blue)"></i>temperature °C</div>
+        <div><i style="background:var(--amber)"></i>motion events</div>
+        <div><i style="background:var(--muted)"></i>sighting confidence</div>
+      </div>
+    </div>
+    <div class="verdict red el" data-in="5.0" id="v1" style="right:60px;bottom:120px">evacuate</div>
+    <div class="lede el" data-in="5.6" style="margin-top:44px;max-width:1000px">
+      EMF and temperature leave the benign band together — that pair is the signature. One channel alone
+      is noise; the entrance reads 0.35 and is not escalated.
+    </div>
+  </div>
+
+  <!-- 3 -->
+  <div class="scene" id="s3" style="display:none">
+    <div class="eyebrow el" data-in="0.05">Sector main_stage · the control tick, 900</div>
+    <div class="plot el" data-in="0.3" style="height:250px;margin-top:16px">
+      <svg id="plot2" width="100%" height="250" viewBox="0 0 1152 250" preserveAspectRatio="none"></svg>
+      <div class="labels">
+        <div><i style="background:var(--red)"></i>EMF mG</div>
+        <div><i style="background:var(--blue)"></i>temperature °C</div>
+        <div><i style="background:var(--amber)"></i>motion events</div>
+        <div><i style="background:var(--muted)"></i>sighting confidence</div>
+      </div>
+    </div>
+    <div class="verdict grey el" data-in="3.2" id="v2" style="right:60px;bottom:150px">hold</div>
+    <div class="lede el" data-in="3.9" style="margin-top:44px;max-width:1000px">
+      Forty-one motion events — the highest reading in the data set — and it is a crowd. A swarm that
+      watches movement escalates here and the feed records a false alarm. Ours holds.
+    </div>
+  </div>
+
+  <!-- 4 -->
+  <div class="scene" id="s4" style="display:none">
+    <div class="eyebrow el" data-in="0.05">The decision, printed by the real solver</div>
+    <div class="tele el" data-in="0.3" style="margin-top:16px">
+      <div id="t1" class="mono"></div>
+      <div id="t2" class="mono"></div>
+      <div id="t3" class="mono"></div>
+    </div>
+    <div class="tele el" data-in="4.6" style="margin-top:22px">
+      <div id="t4" class="mono" style="color:#6E7378"></div>
+      <div id="t5" class="mono" style="color:#6E7378"></div>
+      <div id="t6" class="mono" style="color:#6E7378"></div>
+      <div id="t7" class="mono" style="color:#6E7378"></div>
+      <div id="t8" class="mono" style="color:#6E7378"></div>
+    </div>
+    <div class="lede el" data-in="8.2" style="margin-top:22px;max-width:1040px">
+      Pure functions: no model, no network, no clock. The swarm explains and argues; this decides,
+      because the false-alarm penalty is the one a language model reliably pays.
+    </div>
+  </div>
+
+  <!-- 5 -->
+  <div class="scene" id="s5" style="display:none">
+    <div class="eyebrow el" data-in="0.05">Live exchange with the venue feed · tick 143</div>
+    <div class="json el" data-in="0.3" style="margin-top:14px">
+      <div id="j1" class="mono"></div>
+    </div>
+    <div class="lede el" data-in="3.6" style="margin-top:22px">
+      The feed returns its own judgment, and the record shows <span class="mono">duplicate: true</span> —
+      this is a second call to the live server, not a recording of one.
+    </div>
+  </div>
+
+  <!-- 6 -->
+  <div class="scene" id="s6" style="display:none">
+    <div class="eyebrow el" data-in="0.05">Escalation, and where it stands</div>
+    <table style="margin-top:14px">
+      <tr class="el" data-in="0.5"><td>Posted to <span class="mono">#loft-incident</span> as <span class="mono">team-crimson-raven · catering_coffee_bar · evacuate</span></td>
+        <td class="r mono">1565115411777851473</td></tr>
+      <tr class="el" data-in="1.0"><td>Route</td><td class="r">One, then the venue webhook</td></tr>
+      <tr class="el" data-in="1.5"><td>Feed judgments: 0.5 · 1.0 · 1.0 — three ticks</td><td class="r mono">2.5</td></tr>
+      <tr class="el" data-in="2.0"><td>False alarms</td><td class="r mono" style="color:var(--green)">0</td></tr>
+    </table>
+    <div class="el" data-in="2.6" style="margin-top:30px;display:flex;gap:44px" class="partners">
+      <div><b>CrewAI</b><span>runs the swarm</span></div>
+      <div><b>You.com</b><span>grounds the Analyst</span></div>
+      <div><b>Parasail</b><span>serves the model</span></div>
+      <div><b>One</b><span>delivers the order</span></div>
+    </div>
+    <div class="el" data-in="3.4" style="margin-top:26px" class="mono"><span class="mono" style="font-size:16px">github.com/dmitrypehovski/exorcism-swarm</span></div>
+  </div>
+
+  <div id="foot"><div class="mono">team-crimson-raven</div><div class="mono" id="fpage"></div></div>
+</div>
+
+<script>
+const SCENES = [
+  ["s1",  0.0,  6.5, "facility aws-builder-loft-sf", "1 / 6"],
+  ["s2",  6.5, 20.0, "tick 143 · breach", "2 / 6"],
+  ["s3", 20.0, 32.0, "tick 900 · control", "3 / 6"],
+  ["s4", 32.0, 43.0, "solver output", "4 / 6"],
+  ["s5", 43.0, 52.0, "feed round-trip", "5 / 6"],
+  ["s6", 52.0, 64.5, "standing", "6 / 6"],
+];
+const TOTAL = 64.5;
+const clamp = x => Math.max(0, Math.min(1, x));
+const ease = x => x < 0.5 ? 2*x*x : 1 - Math.pow(-2*x + 2, 2)/2;
+
+// the real readings of each tick, as fractions of the panel height
+const SERIES = {
+  tick143: {
+    emf:   [0.03, 0.05, 0.04, 0.70, 0.94],   // 3 -> 131 mG
+    temp:  [0.52, 0.53, 0.51, 0.30, 0.15],   // 21 -> -7 C, falling as the sector cools
+    motion:[0.12, 0.14, 0.11, 0.62, 0.86],   // 2 -> 24 events
+    conf:  [0.00, 0.00, 0.00, 0.74, 0.91],
+  },
+  tick900: {
+    emf:   [0.03, 0.04, 0.03, 0.03, 0.03],
+    temp:  [0.53, 0.53, 0.52, 0.53, 0.53],   // 21 C, steady
+    motion:[0.90, 0.92, 0.95, 0.93, 0.90],   // 41 events, flat and high
+    conf:  [0.97, 0.97, 0.97, 0.97, 0.97],
+  },
+};
+const COL = { emf:"#B3261E", temp:"#1F4E79", motion:"#8A6100", conf:"#6E7378" };
+
+function drawPlot(id, series, tLocal, W, H, reveal){
+  const svg = document.getElementById(id);
+  const pad = 18;
+  const step = (W - pad*2) / (series.emf.length - 1);
+  const y = v => H - pad - v * (H - pad*2);
+  let out = "";
+  // ruled paper
+  for (let gy = 0; gy <= 4; gy++){
+    const yy = pad + gy * ((H - pad*2)/4);
+    out += `<line x1="${pad}" y1="${yy}" x2="${W-pad}" y2="${yy}" stroke="#E7E4DA" stroke-width="1"/>`;
+  }
+  // Two thresholds, because the signature is a pair: EMF above its band, temperature below its own.
+  out += `<rect x="${pad}" y="${pad}" width="${W-pad*2}" height="${y(0.62)-pad}" fill="#B3261E" opacity="0.06"/>`;
+  out += `<rect x="${pad}" y="${y(0.26)}" width="${W-pad*2}" height="${H-pad-y(0.26)}" fill="#1F4E79" opacity="0.06"/>`;
+  out += `<text x="${W-pad-6}" y="${pad+16}" text-anchor="end" font-family="DejaVu Sans Mono" font-size="11" fill="#B3261E">EMF out of band</text>`;
+  out += `<text x="${W-pad-6}" y="${H-pad-8}" text-anchor="end" font-family="DejaVu Sans Mono" font-size="11" fill="#1F4E79">temperature out of band</text>`;
+  for (const [key, vals] of Object.entries(series)){
+    const n = clamp(reveal) * (vals.length - 1);
+    let pts = "";
+    for (let i = 0; i <= Math.floor(n); i++) pts += `${pad + i*step},${y(vals[i])} `;
+    const frac = n - Math.floor(n);
+    if (frac > 0 && Math.floor(n) + 1 < vals.length){
+      const i = Math.floor(n);
+      const v = vals[i] + (vals[i+1] - vals[i]) * frac;
+      pts += `${pad + (i+frac)*step},${y(v)} `;
+    }
+    out += `<polyline points="${pts.trim()}" fill="none" stroke="${COL[key]}" stroke-width="2.5" stroke-linejoin="round"/>`;
+    const i = Math.floor(n);
+    out += `<circle cx="${pad + n*step}" cy="${y(vals[Math.min(i, vals.length-1)])}" r="4" fill="${COL[key]}"/>`;
+  }
+  svg.innerHTML = out;
+}
+
+function typeInto(el, text, tLocal, start, speed){
+  const n = Math.max(0, Math.floor((tLocal - start) / speed));
+  el.textContent = text.slice(0, n);
+  return n >= text.length;
+}
+
+const T1 = "control-tick      tick 900  -> observe   no sector engaged; worst reads severity 20.7 (human-crowd)";
+const T2 = "outbreak-level-5  tick 142  -> evacuate  severity 73.0: catering_coffee_bar (0.82, 98 mG, -4C, 4 pinned)";
+const T3 = "outbreak-level-5  tick 143  -> evacuate  severity 88.3: catering_coffee_bar (0.91, 131 mG, -7C, 4 pinned)";
+const R = ["$ python tests/test_decisions.py",
+           "  ok   tick 900 action: got 'observe', want 'observe'",
+           "  ok   tick 142 action: got 'evacuate', want 'evacuate'",
+           "  ok   tick 143 action: got 'evacuate', want 'evacuate'",
+           "all checks passed"];
+const J1 = `> hack26-submit-containment  { team: "team-crimson-raven", tick_id: 143, action: "evacuate" }
+
+{ "tick_id": 143,
+  "expected": "evacuate",
+  "verdict": "correct",
+  "score": 1,
+  "false_alarm": false,
+  "rationale": "evacuate matches a tick of severity 25: catering_coffee_bar
+                (level-5-phantom at 0.91, 131 mG, -7C, 4 pinned).",
+  "expectation_source": "deterministic",
+  "duplicate": true }`;
+
+function render(t){
+  document.getElementById("bar").style.width = (100 * clamp(t/TOTAL)) + "%";
+  for (const [id, start, end, head, page] of SCENES){
+    const sc = document.getElementById(id);
+    const local = t - start;
+    const on = (t >= start && t < end);
+    sc.style.display = on ? "block" : "none";
+    if (!on) continue;
+    document.getElementById("hright").textContent = head;
+    document.getElementById("fpage").textContent = page;
+    for (const el of sc.querySelectorAll(".el")){
+      const inAt = parseFloat(el.dataset.in || "0");
+      const a = Math.min(ease(clamp((local - inAt)/0.45)), ease(clamp((end - t)/0.3)));
+      el.style.opacity = a.toFixed(3);
+    }
+    if (id === "s2"){
+      drawPlot("plot1", SERIES.tick143, local, 1152, 320, clamp((local - 1.0) / 4.0));
+      const v = document.getElementById("v1");
+      if (local > 5.0) v.style.transform = "rotate(-6deg) scale(" + (0.85 + 0.15*ease(clamp((local-5.0)/0.4))) + ")";
+    }
+    if (id === "s3"){
+      drawPlot("plot2", SERIES.tick900, local, 1152, 250, clamp((local - 0.8) / 3.4));
+      const v = document.getElementById("v2");
+      if (local > 3.2) v.style.transform = "rotate(-6deg) scale(" + (0.85 + 0.15*ease(clamp((local-3.2)/0.4))) + ")";
+    }
+    if (id === "s4"){
+      typeInto(document.getElementById("t1"), T1, local, 0.3, 0.020);
+      typeInto(document.getElementById("t2"), T2, local, 1.7, 0.020);
+      typeInto(document.getElementById("t3"), T3, local, 3.1, 0.020);
+      for (let k = 0; k < R.length; k++) typeInto(document.getElementById("t" + (k+4)), R[k], local, 5.0 + k*0.55, 0.012);
+    }
+    if (id === "s5"){
+      typeInto(document.getElementById("j1"), J1, local, 0.4, 0.019);
+    }
+  }
+}
+window.render = render;
+window.TOTAL = TOTAL;
+render(0);
+</script>
+</body>
+</html>
