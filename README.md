@@ -182,66 +182,107 @@ The same file is committed at `demo/exorcism-swarm-demo.mp4`.
 
 ## Where each partner is load-bearing
 
-| Partner | Owns | Remove it and |
-|---|---|---|
-| **CrewAI** | the swarm: Sentinel, Analyst, Dispatcher, each with partial knowledge | there is no swarm and the run is disqualified |
-| **You.com** | grounding: the Analyst checks witness reports against live sources | the Analyst cannot tell lore from rumour |
-| **Parasail** | inference: every agent's model, OpenAI-compatible, tool calling | no agent can reason or emit an order |
-| **One** | the actuator: the containment dispatch to the venue channel `#loft-incident` | nothing leaves the room; the decision is never delivered |
+| Partner | Owns | Remove it and | Measured today |
+|---|---|---|---|
+| **CrewAI** | the swarm: Sentinel, Analyst, Dispatcher, each with partial knowledge | there is no swarm, and a single-agent build is disqualified | live, `crewai 1.15.3` |
+| **You.com** | grounding: the Analyst tests every sighting against live sources | the Analyst cannot tell lore from a party playlist | live, called on You.com's own key and endpoint (`POST https://ydc-index.io/v1/search`, `X-API-Key`) |
+| **Parasail** | inference: the crew's model, OpenAI-compatible with tool calling | no agent reasons or emits an order | **refused** — see below |
+| **One** | the actuator: the containment dispatch into a real app | nothing leaves the room | key live; the Slack and Linear connections have lapsed |
+
+**You.com is not relayed through One.** An earlier revision reached You.com through One's passthrough,
+which the rubric counts as a partner used only as a passthrough — that is, as unused. The Analyst now
+calls You.com directly, and One is kept for what only One does: acting in a real app.
+
+### Parasail, stated plainly
+
+Parasail is the designed default in `llm.py`, not a decoration. On this account every inference call
+returns `403 Inference not allowed. Please add a valid payment method via the Parasail Web UI.` —
+verified across chat completions, embeddings and the Responses API, with all 98 catalog models
+refusing. The event grants credits at the organizers' table; we did not take one. So the run falls
+back to OpenRouter and **records the refusal verbatim** rather than hiding it:
+
+```json
+"parasail": { "role": "inference", "attempted": true, "provider": "openrouter", "fallback": true,
+              "parasail_error": "HTTP 403: Inference not allowed. Please add a valid payment method ..." }
+```
+
+That costs the partner criterion points. It is reported instead of papered over, because the
+alternative — implying a partner was used when it was not — is the disqualifier.
+
+### The run record says who did what
+
+Every run appends a `partners` block to `out/runs.jsonl`, so partner usage is a measurement rather
+than a claim. A real dry run:
+
+```json
+"partners": {
+  "crewai": "swarm of Sentinel, Analyst, Dispatcher",
+  "youcom":  { "role": "grounding", "endpoint": "ydc-index.io/v1/search", "searches": 3, "hits": 15, "errors": 0 },
+  "parasail":{ "role": "inference", "attempted": true, "provider": "openrouter", "fallback": true },
+  "one":     { "role": "action", "slack_posts": 0, "linear_issues": 0 }
+}
+```
+
+Three You.com searches and fifteen live results inside one two-tick run is what grounding looks like
+when it is real.
 
 ## Run it
 
 ```bash
 ./setup.sh                      # toolchain check, venv, .env, preflight
+python prove.py --seeds 200     # one command, four blocks of evidence (see below)
 python validate.py --seeds 200  # the measured result above, no keys needed
 python play_gate.py             # one facility, tick by tick, with the reasoning
 python main.py --dry-run        # the full swarm, printing instead of dispatching
 python main.py                  # the live run
 ```
 
+## What this checkout proves, in one command
+
+```bash
+python prove.py --seeds 200
+```
+
+Four blocks, each the evidence for one line of the venue rubric: the four partners answering live on
+their own credentials, the feed's own verdicts replayed as assertions, a seeded sweep of the
+facility, and a ledger of what passed. A partner it cannot reach is reported as unusable rather than
+quietly substituted. The current output:
+
+```
+1. Partners
+  ok   CrewAI: crewai 1.15.3 importable
+  ok   You.com: 2 live results on its own key (X-API-Key)
+  MISS Parasail: inference refused (98 models listed)
+  MISS One: no operational connections
+2. Regression: the feed's own verdicts, replayed
+  ok   feed verdicts replayed: 12 checks, all checks passed
+3. Sweep: 200 seeds of the facility
+  ok   200 seeds: outbreaks 400/400 contained, 0 false alarms, 7678 civilians saved,
+       0 lost, mean 1.0 ticks, 200/200 seeds clean
+4. Ledger: 4/6 blocks passed · partners answering: 2/4
+```
+
+The exit code is 0 only when every block passes, so the repository never claims more than it can
+show.
+
+## The tick's budget is enforced, not assumed
+
+`swarm_budget.max_active_agents` is a scored limit. `policy.swarm_budget` reads it and
+`policy.within_budget` refuses an order that would exceed it; the refusal is printed and recorded in
+the run log. Regression: `tests/test_decisions.py`.
+
 ## What is here
 
 | File | Role |
 |---|---|
 | `policy.py` | the deterministic gate: sensors in, real or benign out; the last word before an order |
+| `youcom.py` | You.com grounding on its own key, with a call counter for the run record |
+| `prove.py` | the four evidence blocks, one command |
 | `play_gate.py` | rehearsal: the gate alone against the simulation |
 | `validate.py` | the 200-seed distribution |
 | `main.py` | the supervised crew and the tick loop |
 | `facility_sim.py`, `feed.py` | the facility feed (local mock or `FEED_URL`) |
-| `one_cli.py`, `mcp_wrapper.py`, `tools.py` | One: the three-tool loop, dispatch and search |
+| `feed_mcp.py` | the venue scenario MCP: ticks, submissions, scoreboard |
+| `one_cli.py`, `mcp_wrapper.py`, `tools.py` | One: the three-tool loop, dispatch and actions |
 | `dispatch.py` | the escalation: One first, the venue webhook as the sanctioned fallback |
-| `parasail.py`, `llm.py` | Parasail inference, and the provider probe with the OpenRouter fallback |
-
-## Status
-
-- Deterministic gate: **done and measured** (200/200 seeds perfect)
-- Swarm: **runs and scores live** (2/2 contained, 0 false alarms, 31/31 civilians saved)
-- Inference: Parasail primary, OpenRouter fallback verified live
-- One dispatch: **verified in Slack and Linear** (ARL-5 through ARL-9)
-- Deterministic gate: wired into the order path as the final veto
-
-## What this checkout proves, in one command
-
-```bash
-python prove.py --seeds 100
-```
-
-Four blocks, each the evidence for one line of the venue rubric: the four partners answering live
-on their own credentials, the feed's own verdicts replayed as assertions, a seeded sweep of the
-facility, and a ledger of what passed. It reports a partner it cannot reach as unusable rather than
-quietly substituting one — the current output is `5/6 blocks passed, partners answering: 3/4`.
-
-## Partner roles, none of them a passthrough
-
-| Partner | What it does here | Where |
-|---|---|---|
-| CrewAI | Runs the swarm: Sentinel reads sensors, Analyst reads witnesses and the web, Dispatcher orders containment | `main.py` |
-| You.com | Grounds the Analyst on its own key and endpoint (`POST https://ydc-index.io/v1/search`, `X-API-Key`) | `youcom.py` |
-| Parasail | Serves the model for the crew, first choice; a key without a payment method is refused by Parasail and the run says so | `llm.py` |
-| One | Delivers the order into a real app (Slack, Linear) and is the first route for the venue channel | `dispatch.py`, `one_cli.py` |
-
-## The tick's budget is enforced, not assumed
-
-`swarm_budget.max_active_agents` is a scored limit. `policy.swarm_budget` reads it and
-`policy.within_budget` refuses an order that would exceed it; the refusal is printed and recorded
-in the run log. Regression: `tests/test_decisions.py`.
+| `tests/test_decisions.py` | the feed's verdicts as regression assertions |

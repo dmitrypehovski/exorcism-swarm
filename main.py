@@ -34,6 +34,8 @@ from feed import FeedError, open_feed
 from one_cli import OneError, load_env, preflight, redact, resolve, resolve_all, say
 from parasail import ParasailError, check_model, model_id
 from policy import swarm_budget, within_budget, zone_verdict
+import llm as llm_provider
+import youcom
 
 OUT = Path("out")
 ZONE_ACTIONS = ("exorcise", "evacuate")
@@ -184,6 +186,17 @@ def scoreboard(score: dict, timings: list, mode: str, feed_source: str, seconds:
         "slack_posts": outbox.sent["slack"] if outbox else 0,
         "linear_issues": outbox.sent["linear"] if outbox else 0,
         "unconfirmed_writes": outbox.sent["uncertain"] if outbox else 0,
+        # Which partner actually did what. The review looks for genuine partner usage, so the run
+        # records it rather than asserting it: inference is named, grounding is counted, and a
+        # partner that refused is recorded with its own error text.
+        "partners": {
+            "crewai": "swarm of Sentinel, Analyst, Dispatcher",
+            "youcom": {"role": "grounding", "endpoint": "ydc-index.io/v1/search", **youcom.stats()},
+            "parasail": {"role": "inference", "attempted": True,
+                         **{k: v for k, v in llm_provider.resolve().items() if k in ("provider", "fallback", "reason", "parasail_error")}},
+            "one": {"role": "action", "slack_posts": outbox.sent["slack"] if outbox else 0,
+                    "linear_issues": outbox.sent["linear"] if outbox else 0},
+        },
     }
     width = 34
     print()
@@ -239,7 +252,6 @@ def run(args) -> int:
     # Parasail is the event's inference partner and the default. If it refuses inference (a key
     # without a payment method returns 403), the swarm falls back to OpenRouter and says so.
     import llm as llm_provider
-    import youcom
 
     say(f"model provider: {llm_provider.provider_note()}")
     if llm_provider.resolve()["provider"] == "none":

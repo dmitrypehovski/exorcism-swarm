@@ -40,16 +40,20 @@ def search(query: str, count: int = DEFAULT_COUNT, timeout: int = 25) -> list:
         ENDPOINT, data=body,
         headers={"X-API-Key": _key(), "Content-Type": "application/json"},
     )
+    CALLS["searches"] += 1
     try:
         with urllib.request.urlopen(req, timeout=timeout) as res:
             data = json.loads(res.read().decode())
     except urllib.error.HTTPError as exc:
+        CALLS["errors"] += 1
         detail = exc.read()[:200].decode(errors="replace")
         raise YouComError(f"You.com search failed: HTTP {exc.code} {detail}") from None
     except urllib.error.URLError as exc:
+        CALLS["errors"] += 1
         raise YouComError(f"You.com unreachable: {exc.reason}") from None
 
     hits = (data.get("results") or {}).get("web") or data.get("web") or []
+    CALLS["hits"] += len(hits)
     out = []
     for hit in hits[: max(1, int(count))]:
         snips = hit.get("snippets") or hit.get("highlights") or []
@@ -61,6 +65,14 @@ def search(query: str, count: int = DEFAULT_COUNT, timeout: int = 25) -> list:
             "snippet": " ".join(snips)[:400],
         })
     return out
+
+
+CALLS = {"searches": 0, "hits": 0, "errors": 0}
+
+
+def stats() -> dict:
+    """How much You.com grounding this run actually did, for the run record."""
+    return dict(CALLS)
 
 
 def format_hits(hits: list) -> str:
