@@ -112,6 +112,29 @@ Two traps the feed sets, both held:
 - **Tick 143 carries a decoy.** `residual-echo` at the entrance, confidence 0.35, holding. Not
   escalated.
 
+## The escalation in the room
+
+Posted to `#loft-incident` (`1564842098740695100`) and verified by the message Discord handed back, not
+by a 200:
+
+```
+via           venue-webhook
+message_id    1565115411777851473
+channel       1564842098740695100
+author        team-crimson-raven
+```
+
+`dispatch.py` tries **One first** — the three-tool loop, the channel as a path variable, the payload
+built from runtime state — and falls back to the venue webhook the brief publishes for this case. The
+fallback is not a workaround: a participant cannot install an app into the venue's server, which is why
+the brief ships a webhook and calls posting there fully acceptable. One's Discord platform answered
+`no allowed connections` for the same reason, and `dispatch.py` reports which route carried the message
+rather than hiding the difference.
+
+```bash
+python dispatch.py --escalation 'team-crimson-raven · catering_coffee_bar · evacuate · ...'
+```
+
 ## The live run, and the false alarm that justifies the gate
 
 First live run, seed 31, dispatch on: **2/2 contained, but 1 false alarm.** The Dispatcher ordered an
@@ -186,6 +209,7 @@ python main.py                  # the live run
 | `main.py` | the supervised crew and the tick loop |
 | `facility_sim.py`, `feed.py` | the facility feed (local mock or `FEED_URL`) |
 | `one_cli.py`, `mcp_wrapper.py`, `tools.py` | One: the three-tool loop, dispatch and search |
+| `dispatch.py` | the escalation: One first, the venue webhook as the sanctioned fallback |
 | `parasail.py`, `llm.py` | Parasail inference, and the provider probe with the OpenRouter fallback |
 
 ## Status
